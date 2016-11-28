@@ -9,33 +9,45 @@ from PIL import Image
 from imageparse import extract_link
 from tumblrstuff import post_to_tumblr
 
-r = praw.Reddit('Image Collector 1.0 by u/davidwinters')
+r = praw.Reddit(user_agent='Image Collector 1.0 by u/davidwinters', site_name="sketchdaily bot")
 r.config.decode_html_entities = True #this fixes some sillyness with encoding when we get and set the CSS
-r.set_oauth_app_info( client_id='***',
-                      client_secret='***',
-                      redirect_uri='http://127.0.0.1:65010/authorize_callback')
 
-##you have to get the first token manually, its kind of an involved process :/
+
 ## grab saved token
 f = open(os.path.dirname(os.path.abspath(__file__))+'/store.pckl')
 info = pickle.load(f)
 f.close()
 
-## retreive new token
-info = r.refresh_access_information(info['refresh_token'])
+try:
+    ## retreive new token
+    info = r.refresh_access_information(info['refresh_token'])
+    info = r.refresh_access_information()
+
+except Exception as e:
+    exc = e._raw
+    print("Some thing bad happened! HTTPError", exc.status_code)
 
 ## save token
 f = open(os.path.dirname(os.path.abspath(__file__))+'/store.pckl', 'w')
 pickle.dump(info, f)
 f.close()
 
+try:
+    r.set_access_credentials('identity modconfig read', info['access_token'], info['refresh_token'])
+except Exception as e:
+    exc = e._raw
+    print("ugh", exc.status_code)
 
-r.set_access_credentials(info['scope'], info['access_token'], info['refresh_token'])
+#r.set_access_credentials(info['scope'], info['access_token'], info['refresh_token'])
+
+
+
+
 
 subreddit = r.get_subreddit('sketchdaily')
 
 posts = [ ]
-
+keywords = ['imgur', 'jpg', 'gif', 'png']
 links = [ ]
 authors = ''
 ## CREATE IMAGE HERE
@@ -95,7 +107,7 @@ for comment in flat_comments:
 
     del temp_img
 
-   
+
 banner_image.save("headerimg.jpg")
 print "pausing a sec"
 
