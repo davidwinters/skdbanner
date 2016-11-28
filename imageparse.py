@@ -1,4 +1,5 @@
 #lets do stuff to images!
+__author__ = 'David'
 import re
 
 def is_image( str ):
@@ -9,7 +10,7 @@ def is_image( str ):
 
 def imgur_fix( str ):
     
-    if "imgur" in str.lower() and "/a/" not in str.lower():
+    if "imgur" in str.lower() and "/a/" not in str.lower() and "gallery" not in str.lower():
 	return True
     else:
         return False
